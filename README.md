@@ -149,6 +149,13 @@ Concretize["SendMail", "Send email to joedoe@gmail.com with content RandomReal[3
 
 ## References
 
+### Repositories
+
+[AAr1] Anton Antonov
+[NLP Template Engine](https://github.com/antononcube/NLP-Template-Engine),
+(2021),
+[GitHub/antononcube](https://github.com/antononcube).
+
 ### Videos
 
 [AAv1] Anton Antonov

@@ -2,7 +2,7 @@
 
 ## In brief
 
-Wolfram Language (aka Mathematica) paclet that fills in (code) templates using NLP techniques.
+Wolfram Language (aka Mathematica) paclet for code generation by filling in templates using NLP techniques.
 
 The paclet has a template fill in function `Concretize` and a related classifier of natural language specifications.
 A user can provide code templates to be filled in using CSV files.

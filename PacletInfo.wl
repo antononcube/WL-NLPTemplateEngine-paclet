@@ -1,9 +1,11 @@
+(* ::Package:: *)
+
 PacletObject[
   <|
     "Name" -> "AntonAntonov/NLPTemplateEngine",
-    "Description" -> "Filling in of code templates using NLP techniques",
+    "Description" -> "Code generation by filling in templates using NLP techniques",
     "Creator" -> "Anton Antonov",
-    "Version" -> "1.0.0",
+    "Version" -> "1.0.1",
     "WolframVersion" -> "13.2+",
     "PublisherID" -> "AntonAntonov",
     "License" -> "Artistic-2.0",

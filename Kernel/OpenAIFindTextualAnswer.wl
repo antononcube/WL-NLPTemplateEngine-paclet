@@ -119,7 +119,10 @@ OpenAIFindTextualAnswer[text_String, questionArg_String, nAnswersDummy_Integer, 
     ];
 
 OpenAIFindTextualAnswer[text_String, question_String, opts : OptionsPattern[]] :=
-    First @ OpenAIFindTextualAnswer[text, {question}, opts];
+    Block[{res},
+      res = OpenAIFindTextualAnswer[text, {question}, opts];
+      If[ListQ[res], First[res], res]
+    ];
 
 OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
     Module[{model, sep, prelude, echoQ, rulesQ, request, query, msgObj, res, answers},

@@ -122,9 +122,7 @@ GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts
 
       aRes =
           Association@
-              Map[# ->
-                  FindTextualAnswer[command, #, nAnswers, {"String", "Probability"},
-                    opts] &, Keys@aQuestions[workflowType]];
+              Map[# -> FindTextualAnswer[command, #, nAnswers, {"String", "Probability"}, opts] &, Keys@aQuestions[workflowType]];
 
       Map[Association[Rule @@@ #] &, aRes]
     ];

@@ -95,8 +95,31 @@ Options[OpenAIFindTextualAnswer] =
       Union[Options[OpenAITextComplete], Options[OpenAIChatComplete]]
     ];
 
+OpenAIFindTextualAnswer[text_String, questionArg_String, nAnswersDummy_Integer, props : {_String..}, opts : OptionsPattern[]] :=
+    Block[{question=questionArg, lsNAs, isNAQ, res},
+
+      (* Change the question to finish with question mark. *)
+      If[ !StringMatchQ[question, __ ~~ "?" ~~ EndOfString], question = question <> "?"];
+
+      (* Get OpenAI answer. *)
+      res = OpenAIFindTextualAnswer[text, question, opts];
+
+      (* Assign low probabilities to N/A results. *)
+      lsNAs = {"N/A", "None", "Not available", "NotAvailable", "Unknown"};
+      lsNAs = Join[lsNAs, # <> "."& /@ lsNAs];
+      isNAQ = MemberQ[lsNAs, StringTrim @ res];
+
+      (* Return the result in the desired signature. *)
+      List @ Map[
+        Which[
+          # == "Probability" && isNAQ, 0.01,
+          # == "Probability", 0.99,
+          True, res
+        ]&, props]
+    ];
+
 OpenAIFindTextualAnswer[text_String, question_String, opts : OptionsPattern[]] :=
-    OpenAIFindTextualAnswer[text, {question}, opts];
+    First @ OpenAIFindTextualAnswer[text, {question}, opts];
 
 OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
     Module[{model, sep, prelude, echoQ, rulesQ, request, query, msgObj, res, answers},
@@ -176,7 +199,12 @@ OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
       (*-------------------------------------------------*)
 
       (* Pick answers the are long enough. *)
-      answers = Select[StringSplit[res, "\n"], StringLength[#] > StringLength[ToString[Length[questions]]] + StringLength[sep] + 1&];
+      answers =
+          If[ Length[questions] == 1,
+            {res},
+            (*ELSE*)
+            answers = Select[StringSplit[res, "\n"], StringLength[#] > StringLength[ToString[Length[questions]]] + StringLength[sep] + 1&]
+          ];
 
       If[ echoQ, Echo[ColumnForm[answers], "Answers:"]];
 
@@ -186,9 +214,9 @@ OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
           Thread[questions -> answers],
           (*ELSE*)
           answers
-        ]
-        ,
+        ],
         (* ELSE *)
+        Echo["Problem"];
         Message[OpenAIFindTextualAnswer::nans];
         res
       ]

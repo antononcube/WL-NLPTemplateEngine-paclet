@@ -18,6 +18,7 @@ NLPTemplateEngineAddData;
 NLPTemplateEngineReplaceData;
 ConvertCSVData;
 ConvertCSVDataForType;
+OpenAIFindTextualAnswer;
 
 Begin["`Private`"];
 
@@ -32,6 +33,7 @@ Begin["`Private`"];
 Needs["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData`"];
 Needs["AntonAntonov`NLPTemplateEngine`ComputationalWorkflowTypeClassifier`"];
 Needs["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineCore`"];
+Needs["AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer`"];
 
 (* ::Section::Closed:: *)
 (*Package Footer*)

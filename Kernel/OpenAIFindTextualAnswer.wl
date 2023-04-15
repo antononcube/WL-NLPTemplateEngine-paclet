@@ -22,7 +22,7 @@
 BeginPackage["AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer`"];
 (* Exported symbols added here with SymbolName::usage *)
 
-OpenAIFindTextualAnswer::usage = "OpenAIFindTextualAnswer[text, question, nAnswers, properties, opts___]";
+(*OpenAIFindTextualAnswer::usage = "OpenAIFindTextualAnswer[text, question, nAnswers, properties, opts___]";*)
 
 Begin["`Private`"];
 
@@ -33,7 +33,6 @@ Needs["ChristopherWolfram`OpenAILink`"];
 (* OpenAIFindTextualAnswer                                 *)
 (***********************************************************)
 
-(* See GetRawAnswers for needed signatures in this package. *)
 Clear[OpenAIFindTextualAnswer];
 
 OpenAIFindTextualAnswer::nprld = "The value of the option \"Prelude\" is expected to be a string or Automatic.";
@@ -43,7 +42,7 @@ OpenAIFindTextualAnswer::nans = "The obtained answer does not have the expected 
 Options[OpenAIFindTextualAnswer] =
     Join[
       {"Prelude" -> Automatic, "Request" -> Automatic, "Separator" -> Automatic, "StripWith" -> Automatic, "Rules" -> False, "Echo" -> False},
-      Options[OpenAITextCompletion]
+      Options[OpenAITextComplete]
     ];
 
 OpenAIFindTextualAnswer[text_String, question_String, opts : OptionsPattern[]] :=

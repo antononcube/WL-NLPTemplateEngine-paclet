@@ -23,11 +23,61 @@ BeginPackage["AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer`"];
 (* Exported symbols added here with SymbolName::usage *)
 
 (*OpenAIFindTextualAnswer::usage = "OpenAIFindTextualAnswer[text, question, nAnswers, properties, opts___]";*)
+ChatCompletionModelQ::usage = "Checks if a given string an identifier of a chat completion model.";
+TextCompletionModelQ::usage = "Checks if a given string an identifier of a text completion model.";
 
 Begin["`Private`"];
 
 Needs["AntonAntonov`NLPTemplateEngine`"];
 Needs["ChristopherWolfram`OpenAILink`"];
+
+(***********************************************************)
+(* End-points and models correspondence                    *)
+(***********************************************************)
+
+(* Taken from: https://platform.openai.com/docs/models/model-endpoint-compatibility *)
+aEndPointToModels =
+    <|"/v1/moderations" -> {"text-moderation-stable", "text-moderation-latest"},
+      "/v1/edits" -> {"text-davinci-edit-001", "code-davinci-edit-001"},
+      "/v1/chat/completions" -> {"gpt-4", "gpt-4-0314", "gpt-4-32k", "gpt-4-32k-0314", "gpt-3.5-turbo", "gpt-3.5-turbo-0301"},
+      "/v1/audio/transcriptions" -> "whisper-1",
+      "/v1/audio/translations" -> "whisper-1",
+      "/v1/completions" -> {"text-davinci-003", "text-davinci-002", "text-curie-001", "text-babbage-001", "text-ada-001"},
+      "/v1/fine-tunes" -> {"davinci", "curie", "babbage", "ada"},
+      "/v1/embeddings" -> {"text-embedding-ada-002", "text-search-ada-doc-001"}|>;
+
+aModelToEndPoints =
+    <|"gpt-3.5-turbo-0301" -> {"/v1/chat/completions"},
+      "text-davinci-edit-001" -> {"/v1/edits"},
+      "gpt-4-32k" -> {"/v1/chat/completions"},
+      "curie" -> {"/v1/fine-tunes"},
+      "text-davinci-002" -> {"/v1/completions"},
+      "gpt-4" -> {"/v1/chat/completions"},
+      "text-search-ada-doc-001" -> {"/v1/embeddings"},
+      "text-curie-001" -> {"/v1/completions"},
+      "davinci" -> {"/v1/fine-tunes"},
+      "gpt-3.5-turbo" -> {"/v1/chat/completions"},
+      "text-babbage-001" -> {"/v1/completions"},
+      "text-embedding-ada-002" -> {"/v1/embeddings"},
+      "ada" -> {"/v1/fine-tunes"},
+      "whisper-1" -> {"/v1/audio/transcriptions", "/v1/audio/translations"},
+      "babbage" -> {"/v1/fine-tunes"},
+      "gpt-4-0314" -> {"/v1/chat/completions"},
+      "text-davinci-003" -> {"/v1/completions"},
+      "code-davinci-edit-001" -> {"/v1/edits"},
+      "text-moderation-latest" -> {"/v1/moderations"},
+      "text-ada-001" -> {"/v1/completions"},
+      "text-moderation-stable" -> {"/v1/moderations"},
+      "gpt-4-32k-0314" -> {"/v1/chat/completions"}|>;
+
+(*---------------------------------------------------------*)
+Clear[ChatCompletionModelQ];
+ChatCompletionModelQ[m_String] := MemberQ[aEndPointToModels["/v1/chat/completions"], m];
+
+(*---------------------------------------------------------*)
+Clear[TextCompletionModelQ];
+TextCompletionModelQ[m_String] := MemberQ[aEndPointToModels["/v1/completions"], m];
+
 
 (***********************************************************)
 (* OpenAIFindTextualAnswer                                 *)
@@ -42,14 +92,20 @@ OpenAIFindTextualAnswer::nans = "The obtained answer does not have the expected 
 Options[OpenAIFindTextualAnswer] =
     Join[
       {"Prelude" -> Automatic, "Request" -> Automatic, "Separator" -> Automatic, "StripWith" -> Automatic, "Rules" -> False, "Echo" -> False},
-      Options[OpenAITextComplete]
+      Union[Options[OpenAITextComplete], Options[OpenAIChatComplete]]
     ];
 
 OpenAIFindTextualAnswer[text_String, question_String, opts : OptionsPattern[]] :=
     OpenAIFindTextualAnswer[text, {question}, opts];
 
 OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
-    Module[{sep, prelude, echoQ, rulesQ, request, query, res, answers},
+    Module[{model, sep, prelude, echoQ, rulesQ, request, query, msgObj, res, answers},
+
+      (*-------------------------------------------------*)
+      (* Process model                                   *)
+      (*-------------------------------------------------*)
+      model = OptionValue[OpenAIFindTextualAnswer, OpenAIModel];
+      If[TrueQ[model === Automatic], model = "gpt-3.5-turbo" ];
 
       (*-------------------------------------------------*)
       (* Process separator                               *)
@@ -105,7 +161,13 @@ OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
       If[ echoQ, Echo[Framed[query], "Query:"]];
 
       (* Delegate *)
-      res = OpenAITextComplete[query, FilterRules[{opts}, Options[OpenAITextComplete]]];
+      If[ ChatCompletionModelQ[model],
+        msgObj = OpenAIChatMessageObject[<|"Role" -> "user", "Text" -> query|>];
+        res = OpenAIChatComplete[msgObj, OpenAIModel -> model, FilterRules[{opts}, Options[OpenAIChatComplete]]];
+        res = res["Text"],
+        (*ELSE*)
+        res = OpenAITextComplete[query, OpenAIModel -> model, FilterRules[{opts}, Options[OpenAITextComplete]]]
+      ];
 
       If[ echoQ, Echo[Framed[res], "Result:"]];
 

@@ -95,6 +95,7 @@ Begin["`Private`"];
 Needs["AntonAntonov`NLPTemplateEngine`"];
 Needs["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData`"];
 Needs["AntonAntonov`NLPTemplateEngine`ComputationalWorkflowTypeClassifier`"];
+Needs["AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer`"];
 
 (***********************************************************)
 (* GetRawAnswers                                           *)
@@ -105,10 +106,14 @@ Clear[GetRawAnswers];
 GetRawAnswers::nwft =
     "The first argument is an unknown workflow type. The first argument is expected to be one of `1`.";
 
-Options[GetRawAnswers] = Options[FindTextualAnswer];
+Options[GetRawAnswers] = Join[
+  {Method -> FindTextualAnswer},
+  Options[FindTextualAnswer],
+  Options[OpenAIFindTextualAnswer]
+];
 
 GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts : OptionsPattern[]] :=
-    Block[{workflowType = workflowTypeArg, aShortcuts, aQuestions, aRes},
+    Block[{workflowType = workflowTypeArg, aShortcuts, aQuestions, mFunc, aRes},
 
       aShortcuts = Concretize["Data"]["Shortcuts"];
       aQuestions = Concretize["Data"]["Questions"];
@@ -120,9 +125,12 @@ GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts
         Return[$Failed]
       ];
 
+      mFunc = OptionValue[GetRawAnswers, Method];
+      If[TrueQ[mFunc===Automatic], mFunc = FindTextualAnswer];
+
       aRes =
           Association@
-              Map[# -> FindTextualAnswer[command, #, nAnswers, {"String", "Probability"}, opts] &, Keys@aQuestions[workflowType]];
+              Map[# -> mFunc[command, #, nAnswers, {"String", "Probability"}, FilterRules[{opts}, Options[mFunc]]] &, Keys@aQuestions[workflowType]];
 
       Map[Association[Rule @@@ #] &, aRes]
     ];

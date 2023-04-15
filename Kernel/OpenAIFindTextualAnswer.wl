@@ -189,10 +189,9 @@ OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
         ]
         ,
         (* ELSE *)
-        Message[]
-            res
+        Message[OpenAIFindTextualAnswer::nans];
+        res
       ]
-
     ];
 
 

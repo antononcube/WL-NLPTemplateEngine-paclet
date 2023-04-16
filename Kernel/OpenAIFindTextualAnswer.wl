@@ -95,6 +95,11 @@ Options[OpenAIFindTextualAnswer] =
       Union[Options[OpenAITextComplete], Options[OpenAIChatComplete]]
     ];
 
+(*
+This adapter method can be used in the original GetRawAnswers by just using the Method options.
+I.e. Method -> FindTextualAnswer | OpenAIFindTextualAnswer .
+But that means too many calls to OpenAI.
+*)
 OpenAIFindTextualAnswer[text_String, questionArg_String, nAnswersDummy_Integer, props : {_String..}, opts : OptionsPattern[]] :=
     Block[{question=questionArg, lsNAs, isNAQ, res},
 

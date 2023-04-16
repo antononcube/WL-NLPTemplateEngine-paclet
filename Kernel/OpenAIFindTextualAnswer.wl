@@ -224,7 +224,6 @@ OpenAIFindTextualAnswer[text_String, questions_List, opts : OptionsPattern[]] :=
           answers
         ],
         (* ELSE *)
-        Echo["Problem"];
         Message[OpenAIFindTextualAnswer::nans];
         res
       ]

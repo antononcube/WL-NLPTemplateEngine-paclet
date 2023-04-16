@@ -126,11 +126,16 @@ GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts
       ];
 
       mFunc = OptionValue[GetRawAnswers, Method];
-      If[TrueQ[mFunc===Automatic], mFunc = FindTextualAnswer];
+      If[TrueQ[mFunc === Automatic], mFunc = FindTextualAnswer];
 
-      aRes =
-          Association@
-              Map[# -> mFunc[command, #, nAnswers, {"String", "Probability"}, FilterRules[{opts}, Options[mFunc]]] &, Keys@aQuestions[workflowType]];
+      If[ TrueQ[mFunc === OpenAIFindTextualAnswer],
+        aRes = Association @ OpenAIFindTextualAnswer[command, Keys@aQuestions[workflowType], "Rules" -> True, FilterRules[{opts}, Options[OpenAIFindTextualAnswer]]];
+        aRes = Map[List @ Append[#, 0.99]&, aRes],
+        (*ELSE*)
+        aRes =
+            Association@
+                Map[# -> FindTextualAnswer[command, #, nAnswers, {"String", "Probability"}, FilterRules[{opts}, Options[FindTextualAnswer]]] &, Keys@aQuestions[workflowType]]
+      ];
 
       Map[Association[Rule @@@ #] &, aRes]
     ];

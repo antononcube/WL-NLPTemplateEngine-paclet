@@ -95,6 +95,15 @@ Options[OpenAIFindTextualAnswer] =
       Union[Options[OpenAITextComplete], Options[OpenAIChatComplete]]
     ];
 
+Options[OpenAIFindTextualAnswer] =
+    ReplaceAll[Options[OpenAIFindTextualAnswer],
+      {
+        HoldPattern[
+          ChristopherWolfram`OpenAILink`OpenAITokenLimit -> _] -> (ChristopherWolfram`OpenAILink`OpenAITokenLimit -> 300),
+        HoldPattern[
+          ChristopherWolfram`OpenAILink`OpenAIModel -> _] -> (ChristopherWolfram`OpenAILink`OpenAIModel -> "text-curie-001")
+      }];
+
 (*
 This adapter method can be used in the original GetRawAnswers by just using the Method options.
 I.e. Method -> FindTextualAnswer | OpenAIFindTextualAnswer .

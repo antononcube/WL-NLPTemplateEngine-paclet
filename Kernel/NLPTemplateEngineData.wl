@@ -23,6 +23,8 @@ gets the \"standard\" NLP template engine data.";
 
 Begin["`Private`"];
 
+Needs["AntonAntonov`NLPTemplateEngine`"];
+
 (***********************************************************)
 (* Shortcuts                                               *)
 (***********************************************************)

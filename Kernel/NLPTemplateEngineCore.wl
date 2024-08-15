@@ -326,7 +326,11 @@ Concretize[sf : (Automatic | LLMSynthesize | LLMTextualAnswer), command_String, 
       If[ TrueQ[sf == Automatic],
         class = cf[command],
         (*ELSE*)
-        class = LLMSynthesize[{"Classify the following spec:\n", command, "to one of these classes:", StringRiffle[Information[cf, "Classes"], "\n"]}];
+        class =
+            LLMSynthesize[
+              {"Classify the following spec:\n", command, "to one of these classes:", StringRiffle[Information[cf, "Classes"], "\n"]},
+              FilterRules[{opts}, Options[LLMSynthesize]]
+            ];
         If[!MemberQ[Information[cf, "Classes"], class],
           Message[Concretize::wcls, class];
           class = cf[command]

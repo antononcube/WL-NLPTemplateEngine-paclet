@@ -5,10 +5,11 @@ PacletObject[
     "Name" -> "AntonAntonov/NLPTemplateEngine",
     "Description" -> "Code generation by filling in templates using NLP techniques",
     "Creator" -> "Anton Antonov",
+    "License" -> "Artistic-2.0",
+    "PublisherID" -> "AntonAntonov",
     "Version" -> "1.0.4",
     "WolframVersion" -> "13.2+",
-    "PublisherID" -> "AntonAntonov",
-    "License" -> "Artistic-2.0",
+    "PrimaryContext" -> "AntonAntonov`NLPTemplateEngine`",
     "Extensions" -> {
       {
         "Kernel",

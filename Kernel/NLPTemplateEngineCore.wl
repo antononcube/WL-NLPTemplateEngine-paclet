@@ -95,7 +95,13 @@ Begin["`Private`"];
 Needs["AntonAntonov`NLPTemplateEngine`"];
 Needs["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData`"];
 Needs["AntonAntonov`NLPTemplateEngine`ComputationalWorkflowTypeClassifier`"];
-Needs["AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer`"];
+
+(***********************************************************)
+(* GetRawAnswers                                           *)
+(***********************************************************)
+
+Clear[LLMTextualAnswer];
+LLMTextualAnswer = ResourceFunction["LLMTextualAnswer"];
 
 (***********************************************************)
 (* GetRawAnswers                                           *)
@@ -106,10 +112,14 @@ Clear[GetRawAnswers];
 GetRawAnswers::nwft =
     "The first argument is an unknown workflow type. The first argument is expected to be one of `1`.";
 
+GetRawAnswers::nasc = "Non-association result obtained from LLMTextualAnswer.";
+
+GetRawAnswers::nmeth = "The value of the option \"Method\" is expected to be FindTextualAnswer, LLMTextualAnswer, or Automatic.";
+
 Options[GetRawAnswers] = Join[
   {Method -> FindTextualAnswer},
   Options[FindTextualAnswer],
-  Options[OpenAIFindTextualAnswer]
+  Options[LLMTextualAnswer]
 ];
 
 GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts : OptionsPattern[]] :=
@@ -128,15 +138,24 @@ GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts
       mFunc = OptionValue[GetRawAnswers, Method];
       If[TrueQ[mFunc === Automatic], mFunc = FindTextualAnswer];
 
-      If[ TrueQ[mFunc === OpenAIFindTextualAnswer],
-        aRes = Association @ OpenAIFindTextualAnswer[command, Keys@aQuestions[workflowType], "Rules" -> True, FilterRules[{opts}, Options[OpenAIFindTextualAnswer]]];
-        aRes = Map[List @ Append[#, 0.99]&, aRes],
-        (*ELSE*)
+      Which[
+        MemberQ[{LLMTextualAnswer, "LLMTextualAnswer", "LLM"}, mFunc],
+        aRes = Association @ LLMTextualAnswer[command, Keys@aQuestions[workflowType], Association, FilterRules[{opts}, Options[LLMTextualAnswer]]];
+        If[ !AssociationQ[aRes],
+          Message[GetRawAnswers::nasc];
+          Return[$Failed];
+        ];
+        aRes = Map[List @ If[ToLowerCase[#] == "n/a", {#, 0}, {#, 0.99}]&, aRes],
+
+        MemberQ[{FindTextualAnswer, "FindTextualAnswer", Automatic}, mFunc],
         aRes =
             Association@
-                Map[# -> FindTextualAnswer[command, #, nAnswers, {"String", "Probability"}, FilterRules[{opts}, Options[FindTextualAnswer]]] &, Keys@aQuestions[workflowType]]
-      ];
+                Map[# -> FindTextualAnswer[command, #, nAnswers, {"String", "Probability"}, FilterRules[{opts}, Options[FindTextualAnswer]]] &, Keys@aQuestions[workflowType]],
 
+        True,
+        Message[GetRawAnswers::nmeth];
+        Return[GetRawAnswers[workflowTypeArg, command, nAnswers, Method -> FindTextualAnswer, Sequence @@ Normal[KeyDrop[Association[opts], Method]]]];
+      ];
       Map[Association[Rule @@@ #] &, aRes]
     ];
 

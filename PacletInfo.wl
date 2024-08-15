@@ -24,7 +24,7 @@ PacletObject[
           "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineAddData",
           "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData",
           "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineReplaceData",
-          "AntonAntonov`NLPTemplateEngine`OpenAIFindTextualAnswer"
+          "AntonAntonov`NLPTemplateEngine`LLMTextualAnswer"
         }
       },
       {

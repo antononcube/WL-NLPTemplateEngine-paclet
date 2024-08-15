@@ -18,8 +18,8 @@
 
 BeginPackage["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData`"];
 
-NLPTemplateEngineData::usage = "NLPTemplateEngineData[] and NLPTemplateEngineData[(\"Standard\" | \"Default\"] \
-gets the \"standard\" NLP template engine data.";
+(*NLPTemplateEngineData::usage = "NLPTemplateEngineData[] and NLPTemplateEngineData[(\"Standard\" | \"Default\"] \*)
+(*gets the \"standard\" NLP template engine data.";*)
 
 Begin["`Private`"];
 

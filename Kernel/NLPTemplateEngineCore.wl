@@ -301,6 +301,7 @@ Concretize::aulang = "The automatic programming language detection failed. Conti
 Concretize::nargs = "If one argument is given then the first argument is expected to be a string or a list of strings. \
 If two arguments are given then the first argument is expected to be a classifier function or Automatic, \
 and the second argument is expected to be a string or a list of strings.";
+Concretize::wcls = "The LLM workflow classification produced unknown class: \"`1`\".";
 
 Concretize["Data"] := NLPTemplateEngineData["Standard"];
 
@@ -318,15 +319,24 @@ Concretize[ commands : ( _String | {_String..} ), opts : OptionsPattern[]] :=
 Concretize[ sf : (Automatic | _ClassifierFunction | _String), commands : {_String..}, opts : OptionsPattern[]] :=
     Association @ Map[ # -> Concretize[sf, #, opts]&, commands];
 
-Concretize[Automatic, command_String, opts : OptionsPattern[]] :=
-    Block[{cf},
+Concretize[sf : (Automatic | LLMSynthesize | LLMTextualAnswer), command_String, opts : OptionsPattern[]] :=
+    Block[{cf, class},
 
       cf = GetComputationalWorkflowTypeClassifier[];
+      If[ TrueQ[sf == Automatic],
+        class = cf[command],
+        (*ELSE*)
+        class = LLMSynthesize[{"Classify the following spec:\n", command, "to one of these classes:", StringRiffle[Information[cf, "Classes"], "\n"]}];
+        If[!MemberQ[Information[cf, "Classes"], class],
+          Message[Concretize::wcls, class];
+          class = cf[command]
+        ]
+      ];
 
       If[ TrueQ[OptionValue[Concretize, "AvoidMonads"]],
-        Concretize[ cf[command], command, opts],
+        Concretize[class , command, opts],
         (*ELSE*)
-        Concretize[ cf[command] /. {"Classification" -> "ClCon", "QuantileRegression" -> "QRMon"}, command, opts]
+        Concretize[class /. {"Classification" -> "ClCon", "QuantileRegression" -> "QRMon"}, command, opts]
       ]
     ];
 

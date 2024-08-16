@@ -10,6 +10,7 @@ NLPTemplateEngineReplaceData;
 ConvertCSVData;
 ConvertCSVDataForType;
 LLMTextualAnswer;
+LLMClassify;
 
 Begin["`Private`"];
 

@@ -97,11 +97,75 @@ Needs["AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData`"];
 Needs["AntonAntonov`NLPTemplateEngine`ComputationalWorkflowTypeClassifier`"];
 
 (***********************************************************)
-(* GetRawAnswers                                           *)
+(* LLMTextualAnswer                                        *)
 (***********************************************************)
 
 Clear[LLMTextualAnswer];
 LLMTextualAnswer = ResourceFunction["LLMTextualAnswer"];
+
+(***********************************************************)
+(* LLMClassify                                             *)
+(***********************************************************)
+
+Clear[LLMClassify];
+
+LLMClassify::nlbl = "Cannot determine the class label.";
+
+Options[LLMClassify] =
+    Join[
+      {Epilog -> Automatic, "Echo" -> False},
+      Options[LLMTextualAnswer]
+    ];
+
+LLMClassify[texts_List, classLabels_List, opts : OptionsPattern[]] :=
+    Map[LLMClassify[#, classLabels, FilterRules[{opts}, Options@LLMClassify]] &, texts];
+
+LLMClassify[text_String, classLabels_List, opts : OptionsPattern[]] :=
+    Module[{epilog, labels = ToString /@ classLabels, question, echoQ,
+      res, resLbl, index, clRes},
+
+      epilog = OptionValue[LLMClassify, Epilog];
+      question = StringJoin[Riffle[Table[ToString[i] <> ") " <> labels[[i]], {i, Length[labels]}], "\n"]];
+
+      question =
+          If[TrueQ[epilog === Automatic],
+            question <>
+                "\nYour answer should have one of the labels and nothing else.",
+            question <> ToString[OptionValue[epilog]]
+          ];
+
+      echoQ = OptionValue["Echo"] /. None -> False;
+
+      res = LLMTextualAnswer[text, question, String,
+        LLMEvaluator -> OptionValue[LLMClassify, LLMEvaluator],
+        "Request" -> "which of these labels characterizes it:"];
+
+      If[echoQ, Echo[res, "LLMTextualAnswer result:"]];
+
+      res = If[ListQ[res] && Length[res] > 0, First[res], res];
+
+      resLbl =
+          Switch[res,
+
+            _String,
+            If[StringMatchQ[StringTrim[res], RegularExpression["\\d+"]],
+              index = ToExpression@res;
+              If[1 <= index <= Length[labels], labels[[index]],
+                Message[LLMClassify::nlbl];
+                res
+              ],
+              (*ELSE*)
+              clRes = Select[labels, StringContainsQ[res, #] &];
+              If[Length[clRes] == 1, First[clRes], clRes]
+            ],
+
+            _,
+            Message[LLMClassify::nlbl];
+            res
+          ];
+
+      resLbl
+    ];
 
 (***********************************************************)
 (* GetRawAnswers                                           *)
@@ -319,18 +383,14 @@ Concretize[ commands : ( _String | {_String..} ), opts : OptionsPattern[]] :=
 Concretize[ sf : (Automatic | _ClassifierFunction | _String), commands : {_String..}, opts : OptionsPattern[]] :=
     Association @ Map[ # -> Concretize[sf, #, opts]&, commands];
 
-Concretize[sf : (Automatic | LLMSynthesize | LLMTextualAnswer), command_String, opts : OptionsPattern[]] :=
+Concretize[sf : (Automatic | LLMSynthesize | LLMClassify | LLMTextualAnswer | "LLM"), command_String, opts : OptionsPattern[]] :=
     Block[{cf, class},
 
       cf = GetComputationalWorkflowTypeClassifier[];
       If[ TrueQ[sf == Automatic],
         class = cf[command],
         (*ELSE*)
-        class =
-            LLMSynthesize[
-              {"Classify the following spec:\n", command, "to one of these classes:", StringRiffle[Information[cf, "Classes"], "\n"]},
-              FilterRules[{opts}, Options[LLMSynthesize]]
-            ];
+        class = LLMClassify[command, Information[cf, "Classes"], FilterRules[{opts}, Options[LLMClassify]]];
         If[!MemberQ[Information[cf, "Classes"], class],
           Message[Concretize::wcls, class];
           class = cf[command]

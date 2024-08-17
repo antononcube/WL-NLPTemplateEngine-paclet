@@ -7,7 +7,7 @@ PacletObject[
     "Creator" -> "Anton Antonov",
     "License" -> "Artistic-2.0",
     "PublisherID" -> "AntonAntonov",
-    "Version" -> "1.0.4",
+    "Version" -> "1.0.5",
     "WolframVersion" -> "13.2+",
     "PrimaryContext" -> "AntonAntonov`NLPTemplateEngine`",
     "Extensions" -> {
@@ -22,10 +22,11 @@ PacletObject[
           "AntonAntonov`NLPTemplateEngine`GetAnswers",
           "AntonAntonov`NLPTemplateEngine`GetComputationalWorkflowTypeClassifier",
           "AntonAntonov`NLPTemplateEngine`GetRawAnswers",
+          "AntonAntonov`NLPTemplateEngine`LLMClassify",
+          "AntonAntonov`NLPTemplateEngine`LLMTextualAnswer",
           "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineAddData",
           "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineData",
-          "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineReplaceData",
-          "AntonAntonov`NLPTemplateEngine`LLMTextualAnswer"
+          "AntonAntonov`NLPTemplateEngine`NLPTemplateEngineReplaceData"
         }
       },
       {

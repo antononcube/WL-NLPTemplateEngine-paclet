@@ -129,9 +129,9 @@ LLMClassify[text_String, classLabels_List, opts : OptionsPattern[]] :=
 
       question =
           If[TrueQ[epilog === Automatic],
-            question <>
-                "\nYour answer should have one of the labels and nothing else.",
-            question <> ToString[OptionValue[epilog]]
+            question <> "\nYour answer should have one of the labels and nothing else.",
+            (*ELSE*)
+            question <> ToString[epilog]
           ];
 
       echoQ = OptionValue["Echo"] /. None -> False;
@@ -176,6 +176,8 @@ Clear[GetRawAnswers];
 GetRawAnswers::nwft =
     "The first argument is an unknown workflow type. The first argument is expected to be one of `1`.";
 
+GetRawAnswers::ndta = "No template data for the workflow label `1`.";
+
 GetRawAnswers::nasc = "Non-association result obtained from LLMTextualAnswer.";
 
 GetRawAnswers::nmeth = "The value of the option \"Method\" is expected to be FindTextualAnswer, LLMTextualAnswer, or Automatic.";
@@ -203,8 +205,19 @@ GetRawAnswers[workflowTypeArg_String, command_String, nAnswers_Integer : 4, opts
       If[TrueQ[mFunc === Automatic], mFunc = FindTextualAnswer];
 
       Which[
+
+        !KeyExistsQ[aQuestions, workflowType] || Length[aQuestions[workflowType]] == 0,
+        Message[GetRawAnswers::ndta, workflowType];
+        Return[$Failed],
+
         MemberQ[{LLMTextualAnswer, "LLMTextualAnswer", "LLM"}, mFunc],
-        aRes = Association @ LLMTextualAnswer[command, Keys@aQuestions[workflowType], Association, FilterRules[{opts}, Options[LLMTextualAnswer]]];
+        aRes = Association @ LLMTextualAnswer[
+          command,
+          Keys@aQuestions[workflowType],
+          Association,
+          FilterRules[{opts}, Options[LLMTextualAnswer]]
+        ];
+
         If[ !AssociationQ[aRes],
           Message[GetRawAnswers::nasc];
           Return[$Failed];
@@ -357,7 +370,8 @@ Options[Concretize] =
         "AvoidMonads" -> False,
         "AssociationResult" -> False,
         "UserID" -> None,
-        "CopyToClipboard" -> True }
+        "CopyToClipboard" -> True },
+      Options[LLMClassify]
     ];
 
 Concretize::tlang = "The value of the option \"TargetLanguage\" is expected to be one of `1`.";

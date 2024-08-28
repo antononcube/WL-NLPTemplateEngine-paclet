@@ -215,12 +215,11 @@ aPythonTemplates = <|
 
   "QRMon" ->
       (StringTemplate @ StringReplace[#, "\n" ~~ (WhitespaceCharacter..) -> "\n"]&) @
-          "print(\"Example API -- no actual implementation !!!\")
-          qrObj = QRMonUnit(`dataset`)
-          QRMonEchoDataSummary(qrObj)
-          qrObj = QRMonQuantileRegression(obj, df = `knots`, probabilities = `probs`, degree = `intOrder`)
-          QRMonPlot(qrObj, datePlotQ = `dateListPlotQ` )
-          QRMonErrorsPlot(qrObj, relativeErrors = `relativeErrorsQ`, datePlotQ = `dateListPlotQ`)",
+          "qrObj = (Regressionizer($*dataset)
+          .echo_data_summary()
+          .quantile_regression(knots = $*knots, probs = $*probs, order = $*intOrder)
+          .plot(date_plot = $*dateListPlotQ)
+          .errors_plot(relative_errors = $*relativeErrorsQ, date_plot = $*dateListPlotQ))",
 
   "LatentSemanticAnalysisImperative" ->
       (StringTemplate @ StringReplace[#, "\n" ~~ (WhitespaceCharacter..) -> "\n"]&) @

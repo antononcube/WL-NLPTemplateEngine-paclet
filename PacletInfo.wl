@@ -7,7 +7,7 @@ PacletObject[
     "Creator" -> "Anton Antonov",
     "License" -> "Artistic-2.0",
     "PublisherID" -> "AntonAntonov",
-    "Version" -> "1.0.5",
+    "Version" -> "1.0.6",
     "WolframVersion" -> "13.2+",
     "PrimaryContext" -> "AntonAntonov`NLPTemplateEngine`",
     "Extensions" -> {

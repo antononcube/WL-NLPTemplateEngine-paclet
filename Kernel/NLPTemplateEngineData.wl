@@ -215,11 +215,11 @@ aPythonTemplates = <|
 
   "QRMon" ->
       (StringTemplate @ StringReplace[#, "\n" ~~ (WhitespaceCharacter..) -> "\n"]&) @
-          "qrObj = (Regressionizer($*dataset)
+          "qrObj = (Regressionizer(`dataset`)
           .echo_data_summary()
-          .quantile_regression(knots = $*knots, probs = $*probs, order = $*intOrder)
-          .plot(date_plot = $*dateListPlotQ)
-          .errors_plot(relative_errors = $*relativeErrorsQ, date_plot = $*dateListPlotQ))",
+          .quantile_regression(knots = `knots`, probs = `probs`, order = `intOrder`)
+          .plot(date_plot = `dateListPlotQ`)
+          .errors_plot(relative_errors = `relativeErrorsQ`, date_plot = `dateListPlotQ`))",
 
   "LatentSemanticAnalysisImperative" ->
       (StringTemplate @ StringReplace[#, "\n" ~~ (WhitespaceCharacter..) -> "\n"]&) @
